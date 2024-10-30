@@ -102,7 +102,21 @@ for (probType, pType) in ((:NonlinearProblem, :NLS), (:NonlinearLeastSquaresProb
         function SciMLBase.__init(
                 prob::$probType, alg::$algType{N}, args...; stats = empty_nlstats(),
                 maxtime = nothing, maxiters = 1000, internalnorm = L2_NORM,
-                alias_u0 = false, verbose = true, kwargs...) where {N}
+                alias = NonlinearAliasSpecifier(alias_u0 = false),
+                verbose = true, kwargs...) where {N}
+
+            if alias isa Bool
+                NonlinearAliasSpecifier(alias = alias)
+            end
+
+            if haskey(kwargs, alias_u0)
+                Base.depwarn("Keyword argument `alias_u0` is deprecated, please use a NonlinearAliasSpecifier instead,
+                e.g. solve(prob, alias = NonlinearAliasSpecifier(alias_u0 = true))")
+                SciMLBase.@reset alias.alias_u0 = values(kwargs).alias_u0
+            end
+
+            alias_u0 = alias.alias_u0
+
             if (alias_u0 && !ismutable(prob.u0))
                 verbose && @warn "`alias_u0` has been set to `true`, but `u0` is \
                                   immutable (checked using `ArrayInterface.ismutable`)."
