@@ -50,4 +50,8 @@ using InteractiveUtils, Test
             @test_nowarn SciMLBase.reinit!(cache, du, u)
         end
     end
+
+    @testset "High Level Solve Tests" begin
+        include("high_level_solve.jl")
+    end
 end
